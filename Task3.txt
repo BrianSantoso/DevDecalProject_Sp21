@@ -1,0 +1,29 @@
+1. How is web3 used in componentDidMount? How does the user connect to the blockchain network? This is metamask!
+
+When the react component is first rendered, the code asks the browser for a Web3 instance, and receives injected Web3 via MetaMask. The Web3 Instance acts a middleman between the browser and the blockchain, translating JavaScript requests into JSON-RPC requests. Then the code inside componentDidMount gets the instance of the MerchToken smart contract using its ABI and Address.
+
+2. pick one function: fetchLoot, addLoot, or buyLoot and explain in detail what it is doing and how it works. Every line please!
+
+buyLoot explained in following comments:
+
+buyLoot = (ev) => {
+    // Get MerchToken contract instance and user accounts from React component's state
+    const { contract, accounts } = this.state;
+    
+    // Prevent the default behavior of the form's onSubmit event (which is refreshing the page).
+    ev.preventDefault();
+
+    // Set the React component's state to loading
+    this.setState({ loading: true });
+
+    // Use Web3 to call the buyToken function on the MerchToken smart contract.
+    contract.methods.buyToken(this.state.buying.id).send(
+        { from: accounts[0], value: this.state.buying.price } // Send using the user's first account, pay the buying price (which is stored in component's state)
+    ).then(() => this.fetchLoot()).then(() => { // When the smart contract function is done executing, call fetchLoot, then when fetchLoot is done,
+        this.setState({ buying: null }); // set the component's "buying" ("token to buy") to null.
+    }, (err) => { // If an error occurs while calling the smart contract function or while calling fetchLoot,
+        console.error(err); // print the error object to the console
+        alert('Creating the token faile!'); // Create an alert on the browser
+        this.setState({ buying: null }); // set the "token to buy" to null.
+    })
+}
